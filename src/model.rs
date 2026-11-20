@@ -55,7 +55,7 @@ pub struct Event {
     /// Points : positif ou négatif.
     pub points: i32,
     pub libelle: String,
-    /// Ordre de création (millisecondes), pour trier les actions à date/heure égales.
+    /// Ordre de création (nanosecondes), pour trier de manière déterministe les actions à date/heure égales.
     #[serde(default)]
     pub crea: u64,
 }
@@ -212,4 +212,40 @@ pub struct EventInput {
     pub points: i32,
     #[serde(default)]
     pub libelle: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn config_par_defaut_has_actions_and_semaine() {
+        let cfg = Config::default();
+        assert!(!cfg.actions_positives.is_empty());
+        assert!(!cfg.actions_negatives.is_empty());
+        assert!(cfg.semaine_paire == "A" || cfg.semaine_paire == "B");
+    }
+
+    #[test]
+    fn data_vide_se_deserialise_de_json_vide() {
+        let d: Data = serde_json::from_str("{}").unwrap();
+        assert!(d.classes.is_empty() && d.events.is_empty() && d.edt.creneaux.is_empty());
+    }
+
+    #[test]
+    fn import_pronote_accepte_photo_absente() {
+        let p: PronoteImport = serde_json::from_str(r#"{"students":[{"prenom":"A"}]}"#).unwrap();
+        assert_eq!(p.classe, "");
+        assert!(p.students[0].photo.is_none());
+    }
+
+    #[test]
+    fn event_sans_crea_reste_deserialisable() {
+        let e: Event = serde_json::from_str(
+            r#"{"id":"x","classe_id":"c","eleve_id":"e","date":"2025-01-01","points":1,"libelle":"ok"}"#,
+        )
+        .unwrap();
+        assert_eq!(e.crea, 0);
+        assert_eq!(e.points, 1);
+    }
 }

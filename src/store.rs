@@ -75,3 +75,40 @@ impl Store {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::{Classe, Student};
+
+    #[test]
+    fn enregistrer_puis_recharger_restitue_les_donnees() {
+        let chemin = std::env::temp_dir().join(format!("st-{}.json", std::process::id()));
+        let _ = std::fs::remove_file(&chemin);
+        let store = Store::new(chemin.clone());
+
+        store
+            .modify(|d| {
+                d.classes.push(Classe {
+                    id: "abc".into(),
+                    nom: "6e A".into(),
+                    students: vec![Student { id: "e1".into(), prenom: "Jean".into(), nom: "Dupont".into(), photo: None }],
+                });
+                Ok(())
+            })
+            .expect("modification");
+
+        let recharge = Store::new(chemin.clone());
+        let classes = recharge.read(|d| Ok(d.classes.clone())).unwrap();
+        assert_eq!(classes.len(), 1);
+        assert_eq!(classes[0].students[0].prenom, "Jean");
+        std::fs::remove_file(chemin).ok();
+    }
+
+    #[test]
+    fn classe_ergonomie_matches_name() {
+        let e = Student { id: "1".into(), prenom: "Jean".into(), nom: "Dupont".into(), photo: None };
+        assert!(e.matches_name("jean", "DUPONT"));
+        assert!(!e.matches_name("Jeann", "Dupont"));
+    }
+}
