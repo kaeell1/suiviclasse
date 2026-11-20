@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SuiviClasse</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>SuiviClasse</h1>
+  <nav id="onglets">
+    <button data-onglet="seance">Saisie d'une séance</button>
+    <button data-onglet="plan">Plan de classe</button>
+    <button data-onglet="suivi">Suivi des élèves</button>
+    <button data-onglet="edt">EDT</button>
+    <button data-onglet="import">Import / Export</button>
+  </nav>
+</header>
+
+<main>
+  <section id="onglet-seance" class="onglet" hidden>
+    <h2>Saisie d'une séance</h2>
+    <div class="barre">
+      <label>Jour <select id="seance-jour"></select> <select id="seance-heure"></select></label>
+      <label>Classe <select id="seance-classe"></select></label>
+      <label>Date <input type="date" id="seance-date"></label>
+      <span id="seance-semaine" class="badge-semaine"></span>
+    </div>
+    <div id="seance-zone"></div>
+  </section>
+
+  <section id="onglet-plan" class="onglet" hidden>
+    <h2>Plan de classe</h2>
+    <div class="barre">
+      <label>Classe <select id="plan-classe"></select></label>
+      <button id="plan-enregistrer">💾 Enregistrer le plan</button>
+    </div>
+    <div class="sous-titre">Configuration rapide — choisissez une disposition prédéfinie :</div>
+    <div class="barre presets">
+      <button data-preset="standard">Configuration standard (2 sièges par table)</button>
+      <button data-preset="complete">Classe complète (18 tables de 2 sièges)</button>
+      <button data-preset="u">Configuration en U</button>
+      <button data-preset="ilots">Configuration en îlots</button>
+      <button data-preset="sciences">Salle de sciences (3 sièges par table)</button>
+      <button data-preset="ds">Devoir surveillé (1 siège par table)</button>
+    </div>
+    <div id="plan-zone" class="zone-plan">
+      <div class="colonne-eleves">
+        <h3>Élèves</h3>
+        <div id="plan-non-assignes" class="non-assignes"></div>
+      </div>
+      <div id="plan-grille" class="grille-tables"></div>
+    </div>
+    <div id="plan-message"></div>
+  </section>
+
+  <section id="onglet-suivi" class="onglet" hidden>
+    <h2>Suivi des élèves</h2>
+    <div class="barre">
+      <label>Choisissez une classe : <select id="suivi-classe"></select></label>
+      <label>Date <input type="date" id="suivi-date"></label>
+    </div>
+    <div id="suivi-zone"></div>
+    <h3>Synthèse des points</h3>
+    <table class="synthese" id="suivi-synthese"><thead><tr><th>Élève</th><th>Points</th><th>Positives</th><th>Négatives</th><th>Note</th></tr></thead><tbody></tbody></table>
+    <h3>Historique des actions</h3>
+    <ul id="suivi-historique" class="historique"></ul>
+  </section>
+
+  <section id="onglet-edt" class="onglet" hidden>
+    <h2>Configuration de l'EDT</h2>
+    <div class="barre">
+      <input type="file" id="edt-fichier" accept=".json,application/json" hidden>
+      <button id="edt-importer">📂 Importer un fichier JSON</button>
+      <button id="edt-ajouter">+ Ajouter un créneau</button>
+      <button id="edt-enregistrer">💾 Enregistrer l'EDT</button>
+    </div>
+    <table class="table-edt">
+      <thead><tr><th>Jour</th><th>Début</th><th>Durée (min)</th><th>Classe</th><th>Matière</th><th>Salle</th><th></th></tr></thead>
+      <tbody id="edt-corps"></tbody>
+    </table>
+  </section>
+
+  <section id="onglet-import" class="onglet" hidden>
+    <h2>Import / Export</h2>
+
+    <div class="carte">
+      <h3>Importer une classe (fichier Pronote)</h3>
+      <input type="file" id="import-pronote-fichier" accept=".json,application/json" hidden>
+      <button id="import-pronote">📂 Choisir un fichier JSON de classe</button>
+    </div>
+
+    <div class="carte">
+      <h3>Créer une classe manuellement</h3>
+      <div class="formulaire">
+        <label>Nom de la classe <input type="text" id="classe-nom" placeholder="6e A"></label>
+        <label>Élèves (un par ligne, « Prénom Nom »)
+          <textarea id="classe-eleves" rows="6" placeholder="Jean Dupont&#10;Marie Martin"></textarea>
+        </label>
+        <button id="classe-creer">Créer la classe</button>
+      </div>
+    </div>
+
+    <div class="carte">
+      <h3>Supprimer une classe</h3>
+      <div class="formulaire">
+        <label>Classe <select id="suppr-classe"></select></label>
+        <button id="classe-supprimer" class="danger">Supprimer</button>
+      </div>
+    </div>
+
+    <div class="carte">
+      <h3>Sauvegarde complète</h3>
+      <div class="formulaire">
+        <input type="file" id="import-total-fichier" accept=".json,application/json" hidden>
+        <button id="import-total">📂 Importer une sauvegarde</button>
+        <a href="/api/export" download><button type="button">⬇ Exporter la sauvegarde</button></a>
+      </div>
+    </div>
+
+    <div class="carte">
+      <h3>Configuration</h3>
+      <div class="formulaire">
+        <label>Actions positives (une par ligne) <textarea id="cfg-positives" rows="5"></textarea></label>
+        <label>Actions négatives (une par ligne) <textarea id="cfg-negatives" rows="5"></textarea></label>
+        <label>Semaine paire = <select id="cfg-semaine"><option>A</option><option>B</option></select></label>
+        <button id="cfg-enregistrer">💾 Enregistrer la configuration</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="voile" class="voile" hidden></div>
+
+<div id="modal-actions" class="modal" hidden>
+  <div class="modal-contenu">
+    <button class="fermer">×</button>
+    <h3 id="modal-actions-titre">Gestion des points pour</h3>
+    <div id="modal-actions-points" class="points-total"></div>
+    <h4>Actions positives (+1 point)</h4>
+    <div id="modal-positives" class="boutons-actions"></div>
+    <h4>Actions négatives (-1 point)</h4>
+    <div id="modal-negatives" class="boutons-actions"></div>
+    <h4>Action personnalisée :</h4>
+    <div class="ligne">
+      <input type="text" id="action-libelle" placeholder="Libellé…">
+      <label>Points : <input type="number" id="action-points" value="1" step="1" style="width:80px"></label>
+      <button id="action-ajouter">Ajouter</button>
+    </div>
+    <h4>Notes sur l'élève (pense-bête)</h4>
+    <textarea id="modal-note" rows="4" placeholder="Double-cliquez n'importe quand sur un élève pour ouvrir cette note."></textarea>
+    <button id="note-enregistrer">💾 Enregistrer la note</button>
+    <h4>Historique des actions :</h4>
+    <ul id="modal-historique" class="historique"></ul>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

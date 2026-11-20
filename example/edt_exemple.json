@@ -1,0 +1,34 @@
+[
+  {
+    "jour": "Lundi",
+    "heure": "08:00",
+    "duree": 55,
+    "classe": "6e A",
+    "matiere": "Mathématiques",
+    "salle": "101"
+  },
+  {
+    "jour": "Lundi",
+    "heure": "10:00",
+    "duree": 55,
+    "classe": "5e B",
+    "matiere": "Mathématiques",
+    "salle": "101"
+  },
+  {
+    "jour": "Mardi",
+    "heure": "08:00",
+    "duree": 110,
+    "classe": "6e A",
+    "matiere": "Sciences physiques",
+    "salle": "Labo 2"
+  },
+  {
+    "jour": "Vendredi",
+    "heure": "14:00",
+    "duree": 55,
+    "classe": "4e C",
+    "matiere": "Technologie",
+    "salle": "Info 1"
+  }
+]
