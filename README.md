@@ -71,6 +71,18 @@ data/       — créé à l'exécution : données de l'application
 | GET | `/api/export` | sauvegarde complète (téléchargement) |
 | POST | `/api/import` | restauration d'une sauvegarde |
 
+## Binaires précompilés (releases)
+
+À chaque tag `v*` (ex. `git tag v0.1.0 && git push origin v0.1.0`), le workflow
+[release.yml](.github/workflows/release.yml) publie une version GitHub
+(onglet [Releases](https://github.com/kaeell1/suiviclasse/releases)) avec :
+
+- `suiviclasse-x86_64-unknown-linux-musl.tar.gz` — Linux 64 bits, binaire statique (aucune dépendance)
+- `suiviclasse-aarch64-apple-darwin.tar.gz` — Mac Apple Silicon
+- `suiviclasse-x86_64-pc-windows-msvc.zip` — Windows 64 bits
+
+Chaque archive contient le binaire, ce README et le fichier EDT d'exemple.
+
 ## Tests et intégration continue
 
 ```bash

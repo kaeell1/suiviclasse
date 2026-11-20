@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.cible }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            cible: x86_64-unknown-linux-musl
+            binaire: suiviclasse
+            archive: tar.gz
+            prep: sudo apt-get update && sudo apt-get install -y musl-tools
+          - os: macos-latest
+            cible: aarch64-apple-darwin
+            binaire: suiviclasse
+            archive: tar.gz
+          - os: windows-latest
+            cible: x86_64-pc-windows-msvc
+            binaire: suiviclasse.exe
+            archive: zip
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.cible }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.cible }}
+      - name: Préparer la chaîne de liaison
+        if: matrix.prep != ''
+        run: ${{ matrix.prep }}
+      - name: Build (release, verrouillé)
+        run: cargo build --locked --release --target ${{ matrix.cible }}
+      - name: Préparer l'archive (tar.gz)
+        if: matrix.archive == 'tar.gz'
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.cible }}/release/${{ matrix.binaire }} dist/
+          cp README.md example/edt_exemple.json dist/
+          tar -czf suiviclasse-${{ matrix.cible }}.tar.gz -C dist \
+            ${{ matrix.binaire }} README.md edt_exemple.json
+      - name: Préparer l'archive (zip)
+        if: matrix.archive == 'zip'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item target/${{ matrix.cible }}/release/${{ matrix.binaire }} dist/
+          Copy-Item README.md, example/edt_exemple.json dist/
+          Compress-Archive -Path dist/* -DestinationPath suiviclasse-${{ matrix.cible }}.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: suiviclasse-${{ matrix.cible }}
+          path: suiviclasse-${{ matrix.cible }}.*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          body: |
+            Binaires de SuiviClasse (Rust). Extraire puis lancer :
+
+            ```bash
+            ./suiviclasse            # Linux / macOS
+            suiviclasse.exe          # Windows
+            ```
+
+            L'interface est servie sur http://localhost:8000 — toutes les données
+            restent localement dans `data/suiviclasse.json`.
+            Vérifier : `edt_exemple.json` est inclus pour la première configuration de l'EDT.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
